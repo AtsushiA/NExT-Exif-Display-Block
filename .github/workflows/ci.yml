@@ -92,6 +92,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: wordpress/plugin-check-action@v1
         with:
+          # リポジトリ名（NExT-Exif-Display-Block）がスラッグ扱いになり、テキストドメインの不一致と誤検出されるため、
+          # リリース時のスラッグを明示する。
+          slug: 'next-exif-display-block'
           # vendor / tests / src（ビルド前JSソース）は本番プラグインに含まれないため除外する（誤検出回避）。
           exclude-directories: 'vendor,tests,node_modules,src'
           categories: |
