@@ -1,0 +1,101 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "next/exif-display-block",
+	"version": "0.1.0",
+	"title": "Exif情報",
+	"category": "media",
+	"icon": "camera",
+	"description": "ページ内の画像を指定して、その画像のExif情報（カメラ・レンズ・F値・シャッター速度など）を表示します。",
+	"keywords": [
+		"exif",
+		"camera",
+		"photo",
+		"lens",
+		"写真",
+		"カメラ",
+		"撮影情報"
+	],
+	"attributes": {
+		"source": {
+			"type": "string",
+			"enum": [ "auto", "manual" ],
+			"default": "auto"
+		},
+		"attachmentId": {
+			"type": "number",
+			"default": 0
+		},
+		"layout": {
+			"type": "string",
+			"enum": [ "table", "inline", "list" ],
+			"default": "table"
+		},
+		"showLabels": {
+			"type": "boolean",
+			"default": true
+		},
+		"separator": {
+			"type": "string",
+			"default": " / "
+		},
+		"fields": {
+			"type": "object",
+			"default": {
+				"camera": true,
+				"lens": true,
+				"focalLength": true,
+				"focalLength35": false,
+				"aperture": true,
+				"shutterSpeed": true,
+				"iso": true,
+				"exposureBias": false,
+				"exposureProgram": false,
+				"flash": false,
+				"whiteBalance": false,
+				"dateTime": true
+			}
+		}
+	},
+	"supports": {
+		"html": false,
+		"anchor": true,
+		"color": {
+			"text": true,
+			"background": true,
+			"link": false,
+			"__experimentalDefaultControls": {
+				"background": true,
+				"text": true
+			}
+		},
+		"typography": {
+			"fontSize": true,
+			"lineHeight": true,
+			"__experimentalFontFamily": true,
+			"__experimentalFontWeight": true,
+			"__experimentalLetterSpacing": true,
+			"__experimentalDefaultControls": {
+				"fontSize": true
+			}
+		},
+		"spacing": {
+			"margin": true,
+			"padding": true,
+			"__experimentalDefaultControls": {
+				"padding": true
+			}
+		},
+		"__experimentalBorder": {
+			"color": true,
+			"radius": true,
+			"style": true,
+			"width": true
+		}
+	},
+	"textdomain": "next-exif-display-block",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"render": "file:./render.php"
+}

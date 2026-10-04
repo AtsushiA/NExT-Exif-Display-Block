@@ -1,0 +1,72 @@
+// 色・文字・余白・枠線はブロックサポートに任せ、ここではレイアウトに必要な最小限だけを定義する。
+.wp-block-next-exif-display-block .screen-reader-text {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	margin: -1px;
+	padding: 0;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+
+.wp-block-next-exif-display-block--inline .wp-block-next-exif-display-block__list {
+	margin: 0;
+}
+
+// 項目の途中（「F」と「値」の間など）では折り返さず、区切り文字の位置で折り返す。
+.wp-block-next-exif-display-block--inline .wp-block-next-exif-display-block__item {
+	white-space: nowrap;
+}
+
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.wp-block-next-exif-display-block--table .wp-block-next-exif-display-block__list {
+	display: grid;
+	grid-template-columns: max-content 1fr;
+	gap: 0.25em 1em;
+	margin: 0;
+}
+
+.wp-block-next-exif-display-block--table.is-labels-hidden .wp-block-next-exif-display-block__list {
+	grid-template-columns: 1fr;
+}
+
+.wp-block-next-exif-display-block--table .wp-block-next-exif-display-block__item {
+	display: contents;
+}
+
+.wp-block-next-exif-display-block--table .wp-block-next-exif-display-block__label,
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__label {
+	font-weight: 600;
+}
+
+.wp-block-next-exif-display-block--table .wp-block-next-exif-display-block__value {
+	margin: 0;
+}
+
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__item {
+	display: flex;
+	align-items: center;
+	gap: 0.5em;
+}
+
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__item + .wp-block-next-exif-display-block__item {
+	margin-top: 0.25em;
+}
+
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__icon {
+	flex-shrink: 0;
+	width: 1.25em;
+	height: 1.25em;
+}
+
+.wp-block-next-exif-display-block--list .wp-block-next-exif-display-block__label:not(.screen-reader-text)::after {
+	content: ":";
+}

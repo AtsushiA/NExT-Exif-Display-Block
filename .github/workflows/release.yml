@@ -1,0 +1,82 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # フォルダ名（NExT-Exif-Display-Block）とプラグインスラッグ
+      # （next-exif-display-block）が異なるため、basename ではなく明示的に指定する。
+      - name: Get plugin metadata
+        id: meta
+        run: |
+          PLUGIN_SLUG="next-exif-display-block"
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "slug=${PLUGIN_SLUG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify version in plugin header
+        run: |
+          HEADER_VERSION=$(grep -oP 'Version:\s*\K[0-9]+\.[0-9]+\.[0-9]+' next-exif-display-block.php)
+          if [ "$HEADER_VERSION" != "${{ steps.meta.outputs.version }}" ]; then
+            echo "::error::Tag version (${{ steps.meta.outputs.version }}) does not match plugin header version ($HEADER_VERSION)"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create plugin zip
+        run: |
+          SLUG="${{ steps.meta.outputs.slug }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          rsync -av \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='.husky' \
+            --exclude='.claude' \
+            --exclude='node_modules' \
+            --exclude='vendor' \
+            --exclude='tests' \
+            --exclude='src' \
+            --exclude='bin' \
+            --exclude='.wp-env.json' \
+            --exclude='.wp-env.override.json' \
+            --exclude='debug.log' \
+            --exclude='db.sql' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='composer.json' \
+            --exclude='composer.lock' \
+            --exclude='phpcs.xml.dist' \
+            --exclude='phpunit.xml.dist' \
+            --exclude='playwright.config.ts' \
+            --exclude='.gitignore' \
+            --exclude='.editorconfig' \
+            --exclude='SPEC.md' \
+            --exclude='*.zip' \
+            ./ "${SLUG}/"
+          zip -r "${SLUG}-${VERSION}.zip" "${SLUG}/"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.meta.outputs.slug }}-${{ steps.meta.outputs.version }}.zip
+          generate_release_notes: true

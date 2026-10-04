@@ -1,0 +1,130 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  phpcs:
+    name: phpcs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+      - run: composer install --no-interaction
+      - run: composer run phpcs
+
+  phpunit:
+    name: "PHPUnit (WP ${{ matrix.wp }} / PHP ${{ matrix.php }})"
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          # MYSQL_DATABASE はあえて指定しない。指定すると DB が既存扱いになり、
+          # install-wp-tests.sh 側で作成をスキップしない限り read -p の対話入力で
+          # CI が止まる。DB を未作成のままにして install-wp-tests.sh 自身に
+          # mysqladmin create させれば、対話プロンプトを経由せず素直に作成される。
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - wp: latest
+            php: '8.3'
+          - wp: latest
+            php: '8.4'
+          - wp: '7.0'
+            php: '8.3'
+          - wp: '7.0'
+            php: '8.4'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer
+          extensions: mysqli
+      - name: Install Composer dependencies
+        run: composer install --no-interaction
+      # ブロックは build/ から登録されるため、Integration テストの前にビルドしておく.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Build block
+        run: |
+          npm ci
+          npm run build
+      - name: Run PHPUnit (unit)
+        # Unit テストは WordPress を読み込まない既定の bootstrap で実行する。
+        # Integration 用 bootstrap と同じプロセスで実行すると、WordPress が定義済みの __() などを
+        # Brain Monkey（Patchwork）が差し替えられず DefinedTooEarly で失敗する。
+        run: vendor/bin/phpunit --testsuite unit
+      - name: Install WordPress test suite
+        # 引数: <db-name> <db-user> <db-pass> <db-host> <wp-version> [<skip-db-create>]
+        # 第6引数は省略（false 相当）。DB は未作成の状態なので、
+        # install-wp-tests.sh が対話プロンプトなしでそのまま作成する。
+        run: bash bin/install-wp-tests.sh wordpress_test root root 127.0.0.1 ${{ matrix.wp }}
+      - name: Run PHPUnit (integration)
+        # Integration 用 bootstrap を明示指定し、integration スイートのみ実行する。
+        # WP_TESTS_DIR は install-wp-tests.sh が /tmp/wordpress-tests-lib を想定するので明示。
+        env:
+          WP_TESTS_DIR: /tmp/wordpress-tests-lib
+        run: vendor/bin/phpunit --testsuite integration --bootstrap tests/phpunit/bootstrap.php
+
+  plugin-check:
+    name: Plugin Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wordpress/plugin-check-action@v1
+        with:
+          # vendor / tests / src（ビルド前JSソース）は本番プラグインに含まれないため除外する（誤検出回避）。
+          exclude-directories: 'vendor,tests,node_modules,src'
+          categories: |
+            general
+            performance
+            accessibility
+            security
+          ignore-warnings: true
+
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          tools: composer
+      - run: npm ci
+      - run: composer install --no-interaction
+      - run: npm run build
+      - run: npx playwright install chromium --with-deps
+      - name: Start wp-env
+        run: npx wp-env start
+      - name: Run E2E tests
+        run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<ruleset name="NExT Exif Display Block">
+	<description>Custom ruleset for NExT Exif Display Block</description>
+
+	<!-- 対象ファイル -->
+	<file>./next-exif-display-block.php</file>
+	<file>./uninstall.php</file>
+	<file>./includes</file>
+	<file>./src/render.php</file>
+
+	<!-- 除外 -->
+	<exclude-pattern>./vendor/*</exclude-pattern>
+	<exclude-pattern>./node_modules/*</exclude-pattern>
+	<exclude-pattern>./build/*</exclude-pattern>
+	<exclude-pattern>./tests/*</exclude-pattern>
+
+	<!-- WordPress Coding Standards -->
+	<rule ref="WordPress">
+		<!-- render.php はブロックのテンプレートとして WP core から $attributes/$content/$block を渡されるため、グローバル変数プレフィックスの規約は対象外とする -->
+		<exclude name="WordPress.NamingConventions.PrefixAllGlobals" />
+		<!-- 本プロジェクトのコメントは日本語のみのため、DocComment の要約が半角大文字で始まる規約は対象外とする -->
+		<exclude name="Generic.Commenting.DocComment.ShortNotCapital" />
+	</rule>
+
+	<!-- PHP互換性チェック -->
+	<rule ref="PHPCompatibilityWP" />
+
+	<!-- PHP バージョン -->
+	<config name="testVersion" value="7.4-" />
+
+	<!-- テキストドメイン -->
+	<config name="text_domain" value="next-exif-display-block" />
+
+	<!-- プレフィックス -->
+	<config name="prefixes" value="next_exif_display_block" />
+	<config name="minimum_wp_version" value="6.5" />
+</ruleset>
