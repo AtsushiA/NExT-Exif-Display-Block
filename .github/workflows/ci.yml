@@ -62,7 +62,7 @@ jobs:
       # ブロックは build/ から登録されるため、Integration テストの前にビルドしておく.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - name: Build block
         run: |
@@ -111,7 +111,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - uses: shivammathur/setup-php@v2
         with:
