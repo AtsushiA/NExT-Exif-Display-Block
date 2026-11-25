@@ -1,5 +1,7 @@
 # NExT Exif Display Block
 
+[![Try in WordPress Playground](https://img.shields.io/badge/Try%20in-WordPress%20Playground-3858e9?logo=wordpress)](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/AtsushiA/NExT-Exif-Display-Block/main/blueprint.json)
+
 ページ内の画像を指定して、その画像の撮影情報（Exif）を表示する WordPress ブロックプラグインです。
 
 | 項目 | 内容 |
